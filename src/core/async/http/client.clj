@@ -23,7 +23,11 @@
   (let [^HttpHeaders http-headers (.getHeaders headers)]
     (->> (.names http-headers)
          (map (fn [header-name]
-                [header-name (vec (.getAll http-headers header-name))]))
+                (let [header-values (.getAll http-headers header-name)
+                      value (if (= 1 (count header-values))
+                              (first header-values)
+                              (vec header-values))]
+                  [header-name value])))
          (into {}))))
 
 (comment
@@ -69,21 +73,22 @@
     (log/debug "We have new callbacks" callbacks-with-default)
     (->BasicAsyncHandler callbacks-with-default)))
 
-(let [http-headers (DefaultHttpHeaders.)]
-  (.add http-headers "X-Header" "value1")
-  (.add http-headers "X-Header" "value2")
-  (.add http-headers "X-Header-1" "value2")
-  (.add http-headers "X-Header-2" ["value1" "value2"])
-  (let [headers (HttpResponseHeaders. http-headers)]
-    (convert-headers headers)))
-
-
 (defn create-core-async-handler
   ""
   [{:keys [status-chan headers-chan body-chan error-chan] :as chans}]
   (log/debug "Create core async handler with chans" chans)
 
-  (let [callbacks (-> {}
+  (let [close-all-channels (fn []
+                             (when (some? body-chan)
+                               (log/debug "Close body part chan")
+                               (close! body-chan))
+                             (when (some? status-chan)
+                               (close! status-chan))
+                             (when (some? headers-chan)
+                               (close! headers-chan))
+                             (when (some? error-chan)
+                               (close! error-chan)))
+        callbacks (-> {}
                       (utils/assoc-if (fn [_ _] (some? status-chan))
                                       :status-callback
                                       (fn [this status-code]
@@ -102,20 +107,11 @@
                       (utils/assoc-if (fn [_ _] (some? error-chan))
                                       :error-callback
                                       (fn [this ^Throwable error]
-                                        (>!! error-chan error)))
-                      ; TODO close all channels
+                                        (>!! error-chan error)
+                                        (close-all-channels)))
                       (assoc :completed-callback (fn [this]
-
                                                    (log/debug "Completed callback")
-                                                   (when (some? body-chan)
-                                                     (log/debug "Close body part chan")
-                                                     (close! body-chan))
-                                                   (when (some? status-chan)
-                                                     (close! status-chan))
-                                                   (when (some? headers-chan)
-                                                     (close! headers-chan))
-                                                   (when (some? error-chan)
-                                                     (close! error-chan)))))]
+                                                   (close-all-channels))))]
     (log/debug "We have the callbacks" callbacks)
     (create-basic-handler callbacks)))
 
@@ -149,6 +145,7 @@
 
 (comment
   (sync-get client "http://www.example.com")
+  (sync-get client "http://localhost:8083/fragment-1")
   (sync-get client "http://www.theuselessweb.com/"))
 
 (defn basic-get [client url & options]
@@ -163,7 +160,6 @@
 
 (comment
   (basic-get client "http://www.example.com"))
-
 
 (comment
   (let [{:keys [body-chan]} (get client "http://www.example.com")]

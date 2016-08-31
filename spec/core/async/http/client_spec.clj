@@ -20,7 +20,7 @@
 (describe "convert-headers"
           (it "should return the correct headers"
               (should= {"X-Header"   ["value1" "value2"]
-                        "X-Header-1" ["value2"]
+                        "X-Header-1" "value2"
                         "X-Header-2" ["value1" "value2"]}
 
                        (convert-headers http-headers))))

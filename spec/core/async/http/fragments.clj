@@ -24,6 +24,7 @@
 (defn- fragment [name]
   (fn [request]
     {:status 200
+     :headers {"X-Header-1" ["Value 1" "Value 2"]}
      :body   (str "Hello world and " name "\n")}))
 
 (defn- error-fragment [request]
