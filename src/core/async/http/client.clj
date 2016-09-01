@@ -145,7 +145,7 @@
 
 (comment
   (sync-get client "http://www.example.com")
-  (sync-get client "http://localhost:8083/fragment-1")
+  (sync-get client "http://localhost:8083/endpoint-1")
   (sync-get client "http://www.theuselessweb.com/"))
 
 (defn basic-get [client url & options]
