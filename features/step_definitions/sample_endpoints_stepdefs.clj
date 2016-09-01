@@ -13,4 +13,4 @@
 
 (Then #"^they should be started$" []
       (fact
-        (@world :result) => "Hello world and endpoint-1\n"))
+        (@world :result) => "Hello world and endpoint-1"))
