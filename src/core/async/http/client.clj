@@ -10,7 +10,7 @@
              HttpResponseStatus
              HttpResponseHeaders
              AsyncHandler$State)
-           (io.netty.handler.codec.http DefaultHttpHeaders HttpHeaders)))
+           (io.netty.handler.codec.http HttpHeaders)))
 
 
 (def client (DefaultAsyncHttpClient.))
@@ -79,14 +79,14 @@
   (log/debug "Create core async handler with chans" chans)
 
   (let [close-all-channels (fn []
-                             (when (some? body-chan)
+                             (when body-chan
                                (log/debug "Close body part chan")
                                (close! body-chan))
-                             (when (some? status-chan)
+                             (when status-chan
                                (close! status-chan))
-                             (when (some? headers-chan)
+                             (when headers-chan
                                (close! headers-chan))
-                             (when (some? error-chan)
+                             (when error-chan
                                (close! error-chan)))
         callbacks (-> {}
                       (utils/assoc-if (fn [_ _] (some? status-chan))
@@ -115,39 +115,44 @@
     (log/debug "We have the callbacks" callbacks)
     (create-basic-handler callbacks)))
 
-(defn sync-get
-  ([url] (sync-get client url))
-  ([client url]
-   (let [out-chan (chan 1024)
-         error-chan (chan 1)]
-     (.execute
-       (.prepareGet client url)
-       (create-core-async-handler
-         {:status-chan  out-chan
-          :headers-chan out-chan
-          :body-chan    out-chan
-          :error-chan   error-chan}))
-     (let [error-or-status (async/alts!! [error-chan out-chan])]
-       (m/match [error-or-status]
-                [[status status-chan]]
-                (do
-                  (log/debug "Status" status)
-                  (let [headers (<!! out-chan)]
+(defn sync-get [client url & {:keys [timeout]}]
+  (let [out-chan (chan 1024)
+        error-chan (chan 1)
+        request-builder (.prepareGet client url)]
 
-                    (loop [body-part (<!! out-chan)
-                           result ""]
-                      (if (some? body-part)
-                        (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
-                        {:status  status
-                         :headers headers
-                         :body    result}))))
-                [[ex error-chan]] (do
-                                    (log/error ex "Error")
-                                    nil))))))
+    (when timeout
+      (.setRequestTimeout request-builder timeout))
+
+    (.execute
+      request-builder
+      (create-core-async-handler
+        {:status-chan  out-chan
+         :headers-chan out-chan
+         :body-chan    out-chan
+         :error-chan   error-chan}))
+    (let [error-or-status (async/alts!! [error-chan out-chan])]
+      (m/match [error-or-status]
+               [[status out-chan]]
+               (do
+                 (log/debug "Status" status)
+                 (let [headers (<!! out-chan)]
+
+                   (loop [body-part (<!! out-chan)
+                          result ""]
+                     (if body-part
+                       (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
+                       {:status  status
+                        :headers headers
+                        :body    result}))))
+               [[ex error-chan]]
+               (do
+                 (log/error ex "Error")
+                 {:error ex})))))
 
 (comment
   (sync-get client "http://www.example.com")
   (sync-get client "http://localhost:8083/endpoint-1")
+  (sync-get client "http://localhost:8083/sleep" :timeout 100)
   (sync-get client "http://www.theuselessweb.com/"))
 
 (defn basic-get [client url & options]
