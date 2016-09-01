@@ -1,5 +1,5 @@
 (use '[core.async.http.sample-endpoints :as endpoints])
-(use '[clj-http.client :as client])
+(use '[core.async.http.client :as http])
 (use '[midje.sweet :refer :all])
 
 (def world (atom {:result ""}))
@@ -8,7 +8,7 @@
        (endpoints/start))
 
 (When #"^I check if the sample endpoints are started$" []
-      (let [response (client/get "http://localhost:8083/endpoint-1")]
+      (let [response (http/sync-get "http://localhost:8083/endpoint-1")]
         (reset! world {:result (str (response :body))})))
 
 (Then #"^they should be started$" []

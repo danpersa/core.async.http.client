@@ -115,33 +115,35 @@
     (log/debug "We have the callbacks" callbacks)
     (create-basic-handler callbacks)))
 
-(defn sync-get [client url]
-  (let [out-chan (chan 1024)
-        error-chan (chan 1)]
-    (.execute
-      (.prepareGet client url)
-      (create-core-async-handler
-        {:status-chan  out-chan
-         :headers-chan out-chan
-         :body-chan    out-chan
-         :error-chan   error-chan}))
-    (let [error-or-status (async/alts!! [error-chan out-chan])]
-      (m/match [error-or-status]
-               [[status status-chan]]
-               (do
-                 (log/debug "Status" status)
-                 (let [headers (<!! out-chan)]
+(defn sync-get
+  ([url] (sync-get client url))
+  ([client url]
+   (let [out-chan (chan 1024)
+         error-chan (chan 1)]
+     (.execute
+       (.prepareGet client url)
+       (create-core-async-handler
+         {:status-chan  out-chan
+          :headers-chan out-chan
+          :body-chan    out-chan
+          :error-chan   error-chan}))
+     (let [error-or-status (async/alts!! [error-chan out-chan])]
+       (m/match [error-or-status]
+                [[status status-chan]]
+                (do
+                  (log/debug "Status" status)
+                  (let [headers (<!! out-chan)]
 
-                   (loop [body-part (<!! out-chan)
-                          result ""]
-                     (if (some? body-part)
-                       (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
-                       {:status  status
-                        :headers headers
-                        :body    result}))))
-               [[ex error-chan]] (do
-                                   (log/error ex "Error")
-                                   nil)))))
+                    (loop [body-part (<!! out-chan)
+                           result ""]
+                      (if (some? body-part)
+                        (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
+                        {:status  status
+                         :headers headers
+                         :body    result}))))
+                [[ex error-chan]] (do
+                                    (log/error ex "Error")
+                                    nil))))))
 
 (comment
   (sync-get client "http://www.example.com")
