@@ -26,3 +26,9 @@
                        (convert-headers http-headers))))
 
 (run-specs)
+
+(comment
+  (sync-get client "http://www.example.com")
+  (sync-get client "http://localhost:8083/endpoint-1")
+  (sync-get client "http://localhost:8083/sleep" {:timeout 100})
+  (sync-get client "http://www.theuselessweb.com/"))

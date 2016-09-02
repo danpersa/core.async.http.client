@@ -115,21 +115,33 @@
     (log/debug "We have the callbacks" callbacks)
     (create-basic-handler callbacks)))
 
-(defn sync-get [client url & {:keys [timeout]}]
-  (let [out-chan (chan 1024)
-        error-chan (chan 1)
+(defn get [client url
+           & {:keys [status-chan headers-chan body-chan error-chan timeout]
+              :as   options}]
+  (let [chans {:status-chan  (or status-chan (chan 1))
+               :headers-chan (or headers-chan (chan 1))
+               :body-chan    (or body-chan (chan 1024))
+               :error-chan   (or error-chan (chan 1))}
         request-builder (.prepareGet client url)]
 
     (when timeout
       (.setRequestTimeout request-builder timeout))
 
     (.execute
-      request-builder
-      (create-core-async-handler
-        {:status-chan  out-chan
+      request-builder (create-core-async-handler chans))
+    chans))
+
+(defn sync-get [client url & {:keys [timeout]}]
+  (let [out-chan (chan 1024)
+        error-chan (chan 1)]
+
+    (get client url
+         :status-chan out-chan
          :headers-chan out-chan
-         :body-chan    out-chan
-         :error-chan   error-chan}))
+         :body-chan out-chan
+         :error-chan error-chan
+         :timeout timeout)
+
     (let [error-or-status (async/alts!! [error-chan out-chan])]
       (m/match [error-or-status]
                [[status out-chan]]
@@ -149,24 +161,9 @@
                  (log/error ex "Error")
                  {:error ex})))))
 
-(comment
-  (sync-get client "http://www.example.com")
-  (sync-get client "http://localhost:8083/endpoint-1")
-  (sync-get client "http://localhost:8083/sleep" :timeout 100)
-  (sync-get client "http://www.theuselessweb.com/"))
-
 (defn basic-get [client url & options]
   (.execute
     (.prepareGet client url) (create-basic-handler {})))
-
-(defn channel-get [client url & options]
-  (let [body-chan (chan 1024)]
-    (.execute
-      (.prepareGet client url) (create-core-async-handler {:body-chan body-chan}))
-    {:body-chan body-chan}))
-
-(comment
-  (basic-get client "http://www.example.com"))
 
 (comment
   (let [{:keys [body-chan]} (get client "http://www.example.com")]
@@ -176,7 +173,7 @@
 
 
 (comment
-  (let [{:keys [body-chan]} (channel-get client "http://www.example.com")]
+  (let [{:keys [body-chan]} (get client "http://www.example.com")]
     (async/go-loop []
       (when-some [body-part (String. (<! body-chan))]
         (log/debug "out of body" body-part)))))

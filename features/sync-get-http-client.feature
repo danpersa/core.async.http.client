@@ -18,11 +18,11 @@ Feature: Sync Get For The Http Client
     And I should get the body "streaming-endpoint-1 part-0 part-1 part-2"
 
 
-  Scenario: Call an endpoint which returns 500
+  Scenario: Do a sync get to an endpoint which returns 500
     When I do a sync get to "/error"
     Then I should get the 500 status
     And I should get the body "Hello world 500"
 
-  Scenario: Call an endpoint which times out
+  Scenario: Do a sync get to an endpoint which times out
     When I do a sync get to "/sleep" with a request timeout of 100
     Then I should get an error
