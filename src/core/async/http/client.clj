@@ -9,11 +9,11 @@
              HttpResponseBodyPart
              HttpResponseStatus
              HttpResponseHeaders
-             AsyncHandler$State)
+             AsyncHandler$State AsyncHttpClient)
            (io.netty.handler.codec.http HttpHeaders)))
 
 
-(def client (DefaultAsyncHttpClient.))
+(def default-client (DefaultAsyncHttpClient.))
 
 (def state {:continue AsyncHandler$State/CONTINUE
             :abort    AsyncHandler$State/ABORT
@@ -115,14 +115,15 @@
     (log/debug "We have the callbacks" callbacks)
     (create-basic-handler callbacks)))
 
-(defn get [client url
-           & {:keys [status-chan headers-chan body-chan error-chan timeout]
+(defn get [url
+           & {:keys [^AsyncHttpClient client status-chan headers-chan body-chan error-chan timeout]
               :as   options}]
-  (let [chans {:status-chan  (or status-chan (chan 1))
+  (let [cl (or client default-client)
+        chans {:status-chan  (or status-chan (chan 1))
                :headers-chan (or headers-chan (chan 1))
                :body-chan    (or body-chan (chan 1024))
                :error-chan   (or error-chan (chan 1))}
-        request-builder (.prepareGet client url)]
+        request-builder (.prepareGet cl url)]
 
     (when timeout
       (.setRequestTimeout request-builder timeout))
@@ -131,11 +132,12 @@
       request-builder (create-core-async-handler chans))
     chans))
 
-(defn sync-get [client url & {:keys [timeout]}]
+(defn sync-get [url & {:keys [client timeout]}]
   (let [out-chan (chan 1024)
         error-chan (chan 1)]
 
-    (get client url
+    (get url
+         :client client
          :status-chan out-chan
          :headers-chan out-chan
          :body-chan out-chan
@@ -166,14 +168,15 @@
     (.prepareGet client url) (create-basic-handler {})))
 
 (comment
-  (let [{:keys [body-chan]} (get client "http://www.example.com")]
+  (let [{:keys [body-chan]} (get "http://www.example.com" :client default-client)]
     (async/go-loop []
       (when-some [body-part (String. (<! body-chan))]
         (log/debug "out of body" body-part)))))
 
 
 (comment
-  (let [{:keys [body-chan]} (get client "http://www.example.com")]
+  (let [{:keys [body-chan]} (get "http://www.example.com" :client default-client)]
     (async/go-loop []
       (when-some [body-part (String. (<! body-chan))]
         (log/debug "out of body" body-part)))))
+

@@ -10,13 +10,14 @@
 
 (When #"^I do a get to \"([^\"]*)\"$" [endpoint-url]
       (let [client (@world :client)
-            response (http/get client (str "http://localhost:8083" endpoint-url))]
+            response (http/get (str "http://localhost:8083" endpoint-url)
+                               :client client)]
         (reset! world {:result response})))
 
 (When #"^I do a get to \"([^\"]*)\" with a request timeout of (\d+)$" [endpoint-url timeout]
       (let [client (@world :client)
-            response (http/get client
-                               (str "http://localhost:8083" endpoint-url)
+            response (http/get (str "http://localhost:8083" endpoint-url)
+                               :client client
                                :timeout (Integer. timeout))]
         (reset! world {:result response})))
 

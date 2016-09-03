@@ -8,7 +8,7 @@
        (endpoints/start))
 
 (When #"^I check if the sample endpoints are started$" []
-      (let [response (http/sync-get http/client "http://localhost:8083/endpoint-1")]
+      (let [response (http/sync-get "http://localhost:8083/endpoint-1" :client http/default-client)]
         (reset! world {:result (str (response :body))})))
 
 (Then #"^they should be started$" []
