@@ -130,7 +130,10 @@
 
     (.execute
       request-builder (create-core-async-handler chans))
-    chans))
+    {:status (chans :status-chan)
+     :headers (chans :headers-chan)
+     :body (chans :body-chan)
+     :error (chans :error-chan)}))
 
 (defn sync-get [url & {:keys [client timeout]}]
   (let [out-chan (chan 1024)
@@ -179,4 +182,3 @@
     (async/go-loop []
       (when-some [body-part (String. (<! body-chan))]
         (log/debug "out of body" body-part)))))
-
