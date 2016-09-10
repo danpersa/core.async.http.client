@@ -1,12 +1,14 @@
 (ns core.async.http.client-spec
   (:require [speclj.core :refer :all]
             [midje.util :refer [testable-privates]]
-            [core.async.http.client :refer :all])
-  (:import (io.netty.handler.codec.http DefaultHttpHeaders)
-           (org.asynchttpclient HttpResponseHeaders)))
+            [core.async.http.client :refer :all]
+            [core.async.http.client :as http])
+  (:import (io.netty.handler.codec.http DefaultHttpHeaders HttpHeaders)
+           (org.asynchttpclient HttpResponseHeaders BoundRequestBuilder RequestBuilderBase Request)))
 
 (testable-privates core.async.http.client
-                   convert-headers)
+                   convert-headers
+                   add-headers!)
 
 (def ^:private http-headers
   (let [http-headers (DefaultHttpHeaders.)]
@@ -24,6 +26,18 @@
                         "X-Header-2" ["value1" "value2"]}
 
                        (convert-headers http-headers))))
+
+(describe "add-headers"
+          (it "should set the headers for the request"
+              (let [^RequestBuilderBase request-builder
+                    (.prepareGet http/default-client "http://localhost:8083/endpoint-1")]
+                (add-headers! request-builder {"x-header-1" "value-1"
+                                               "x-header-2" ["value-2" "value-3"]})
+                (let [^Request request (.build request-builder)
+                      ^HttpHeaders headers (.getHeaders request)]
+                  (should= (.names headers) #{"x-header-1" "x-header-2"})
+                  (should= (.getAll headers "x-header-1") ["value-1"])
+                  (should= (.getAll headers "x-header-2") ["value-2" "value-3"])))))
 
 (run-specs)
 

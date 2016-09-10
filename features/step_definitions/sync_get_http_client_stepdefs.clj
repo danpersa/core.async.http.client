@@ -1,32 +1,33 @@
 (use '[core.async.http.client :as http])
-(use '[midje.sweet :refer :all])
+(use '[world :as world])
+(use '[speclj.core :refer :all])
 
-(def world (atom {:result nil}))
 
 (Given #"^an http client$" []
-       (swap! world assoc :client http/default-client))
+       (world/swap-world! assoc :client http/default-client))
 
 (When #"^I do a sync get to \"([^\"]*)\"$" [endpoint-url]
-      (let [client (@world :client)
+      (let [client ((world/value) :client)
+            prepared-headers ((world/value) :prepared-headers)
             response (http/sync-get (str "http://localhost:8083" endpoint-url)
+                                    :headers (or prepared-headers {})
                                     :client client)]
-        (reset! world {:result response})))
+        (world/reset-world! {:result response})))
 
 (When #"^I do a sync get to \"([^\"]*)\" with a request timeout of (\d+)$" [endpoint-url timeout]
-      (let [client (@world :client)
+      (let [client ((world/value) :client)
             response (http/sync-get (str "http://localhost:8083" endpoint-url)
                                     :client client
                                     :timeout (Integer. timeout))]
-        (reset! world {:result response})))
+        (world/reset-world! {:result response})))
 
 (Then #"^I should get the body \"([^\"]*)\"$" [expected-body]
-      (fact
-        ((@world :result) :body) => expected-body))
+      (let [result-body (((world/value) :result) :body)]
+        (should= expected-body result-body)))
 
 (Then #"^I should get the (\d+) status$" [expected-status]
-      (fact
-        ((@world :result) :status) => (Integer. expected-status)))
+      (should= (Integer. expected-status)
+               (((world/value) :result) :status)))
 
 (Then #"^I should get an error$" []
-      (fact
-        (nil? ((@world :result) :error)) => false))
+      (should-not-be-nil (((world/value) :result) :error)))

@@ -9,7 +9,7 @@
              HttpResponseBodyPart
              HttpResponseStatus
              HttpResponseHeaders
-             AsyncHandler$State AsyncHttpClient)
+             AsyncHandler$State AsyncHttpClient RequestBuilderBase)
            (io.netty.handler.codec.http HttpHeaders)))
 
 
@@ -115,27 +115,40 @@
     (log/debug "We have the callbacks" callbacks)
     (create-basic-handler callbacks)))
 
+(defn- add-headers! [^RequestBuilderBase request-builder headers]
+  (when headers
+    (doseq [header (seq headers)]
+      (let [header-name (first header)
+            header-values (last header)]
+        ; Use a multimethod here
+        (if (instance? String header-values)
+          (.addHeader request-builder header-name header-values)
+          (doseq [header-value header-values]
+            (.addHeader request-builder header-name header-value)))))))
+
 (defn get [url
-           & {:keys [^AsyncHttpClient client status-chan headers-chan body-chan error-chan timeout]
+           & {:keys [^AsyncHttpClient client status-chan headers-chan body-chan error-chan timeout headers]
               :as   options}]
   (let [cl (or client default-client)
         chans {:status-chan  (or status-chan (chan 1))
                :headers-chan (or headers-chan (chan 1))
                :body-chan    (or body-chan (chan 1024))
                :error-chan   (or error-chan (chan 1))}
-        request-builder (.prepareGet cl url)]
+        ^RequestBuilderBase request-builder (.prepareGet cl url)]
 
     (when timeout
       (.setRequestTimeout request-builder timeout))
 
+    (add-headers! request-builder headers)
+
     (.execute
       request-builder (create-core-async-handler chans))
-    {:status (chans :status-chan)
+    {:status  (chans :status-chan)
      :headers (chans :headers-chan)
-     :body (chans :body-chan)
-     :error (chans :error-chan)}))
+     :body    (chans :body-chan)
+     :error   (chans :error-chan)}))
 
-(defn sync-get [url & {:keys [client timeout]}]
+(defn sync-get [url & {:keys [client timeout headers]}]
   (let [out-chan (chan 1024)
         error-chan (chan 1)]
 
@@ -145,7 +158,8 @@
          :headers-chan out-chan
          :body-chan out-chan
          :error-chan error-chan
-         :timeout timeout)
+         :timeout timeout
+         :headers headers)
 
     (let [error-or-status (async/alts!! [error-chan out-chan])]
       (m/match [error-or-status]

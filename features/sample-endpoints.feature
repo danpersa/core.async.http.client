@@ -5,5 +5,7 @@ Feature: Sample endpoints
 
   Scenario: Starts the sample endpoints
     Given some sample endpoints
-    When I check if the sample endpoints are started
-    Then they should be started
+    And an empty world
+    And an http client
+    When I do a sync get to "/endpoint-1"
+    Then I should get the body "Hello world and endpoint-1"

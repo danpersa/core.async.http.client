@@ -1,7 +1,8 @@
 (ns core.async.http.sample-endpoints
   (:require
     [immutant.web :as web]
-    [immutant.web.async :as iasync]))
+    [immutant.web.async :as iasync]
+    [clojure.string :as str]))
 
 (def ^:private localhost "localhost")
 
@@ -38,13 +39,21 @@
   {:status 200
    :body   (str "Hello world and sleep\n")})
 
+(defn- headers-fragment [request]
+  {:status  200
+   :headers {"Content-Type" "application/json"}
+   :body    (->> (seq (:headers request))
+                 (filter (fn [[key value]] (str/starts-with? key "x-")))
+                 (map (fn [[key value]] (str key ": " value)))
+                 (str/join ", "))})
+
 (defn- run-endpoint [name]
   (web/run (endpoint name) :host localhost :port 8083 :path (str "/" name)))
 
 (defn start []
+  (run-endpoint "endpoint-1")
+  (run-streaming-endpoint "streaming-endpoint-1" 3)
   (web/run error-endpoint :host localhost :port 8083 :path (str "/error"))
   (web/run error-sleep-endpoint :host localhost :port 8083 :path (str "/error-sleep"))
   (web/run sleep-endpoint :host localhost :port 8083 :path (str "/sleep"))
-  (run-streaming-endpoint "streaming-endpoint-1" 3)
-
-  (run-endpoint "endpoint-1"))
+  (web/run headers-fragment :host localhost :port 8083 :path (str "/x-headers")))
