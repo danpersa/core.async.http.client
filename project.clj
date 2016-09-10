@@ -11,7 +11,7 @@
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
              :dev {:source-paths ["dev"]
-                   :test-paths ["spec"]
+                   :test-paths ["features" "features/step_definitions" "spec"]
                    :cucumber-feature-paths ["features"]
                    :resource-paths ["spec/resources"]
                    :plugins      [[speclj                                  "3.3.2"]
