@@ -1,11 +1,19 @@
 (ns world)
 
-(def ^:private the-world (atom {:result nil}))
+(def ^:private the-world (atom {}))
 
 (defn value [] @the-world)
 
+(defn response [] (@the-world :response))
+
+(defn response-body []
+  (str ((@the-world :response) :body)))
+
+(defn response-status []
+  ((@the-world :response) :status))
+
 (defn reset-world!
-  ([] (reset! the-world {:result nil}))
+  ([] (reset! the-world {}))
   ([newval]
    (reset! the-world newval)))
 
