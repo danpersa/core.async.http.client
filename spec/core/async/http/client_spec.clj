@@ -4,7 +4,7 @@
             [core.async.http.client :refer :all]
             [core.async.http.client :as http])
   (:import (io.netty.handler.codec.http DefaultHttpHeaders HttpHeaders)
-           (org.asynchttpclient HttpResponseHeaders BoundRequestBuilder RequestBuilderBase Request)))
+           (org.asynchttpclient HttpResponseHeaders RequestBuilderBase Request)))
 
 (testable-privates core.async.http.client
                    convert-headers
