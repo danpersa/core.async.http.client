@@ -8,7 +8,8 @@
 
 (testable-privates core.async.http.client
                    convert-headers
-                   add-headers!)
+                   add-headers!
+                   convert-method-name)
 
 (def ^:private http-headers
   (let [http-headers (DefaultHttpHeaders.)]
@@ -35,9 +36,13 @@
                                                "x-header-2" ["value-2" "value-3"]})
                 (let [^Request request (.build request-builder)
                       ^HttpHeaders headers (.getHeaders request)]
-                  (should= (.names headers) #{"x-header-1" "x-header-2"})
-                  (should= (.getAll headers "x-header-1") ["value-1"])
-                  (should= (.getAll headers "x-header-2") ["value-2" "value-3"])))))
+                  (should= #{"x-header-1" "x-header-2"} (.names headers))
+                  (should= ["value-1"] (.getAll headers "x-header-1"))
+                  (should= ["value-2" "value-3"] (.getAll headers "x-header-2"))))))
+
+(describe "convert-method"
+          (it "should transform a keyword into an uppercase string"
+              (should= "GET" (convert-method-name :get))))
 
 (run-specs)
 

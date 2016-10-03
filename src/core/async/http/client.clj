@@ -9,7 +9,7 @@
              HttpResponseBodyPart
              HttpResponseStatus
              HttpResponseHeaders
-             AsyncHandler$State AsyncHttpClient RequestBuilderBase)
+             AsyncHandler$State AsyncHttpClient RequestBuilderBase RequestBuilder BoundRequestBuilder)
            (io.netty.handler.codec.http HttpHeaders)))
 
 
@@ -18,6 +18,9 @@
 (def state {:continue AsyncHandler$State/CONTINUE
             :abort    AsyncHandler$State/ABORT
             :upgrade  AsyncHandler$State/UPGRADE})
+
+(defn- convert-method-name [method]
+  (.toUpperCase (name method)))
 
 (defn- convert-headers [^HttpResponseHeaders headers]
   (let [^HttpHeaders http-headers (.getHeaders headers)]
@@ -126,15 +129,25 @@
           (doseq [header-value header-values]
             (.addHeader request-builder header-name header-value)))))))
 
-(defn get [url
-           & {:keys [^AsyncHttpClient client status-chan headers-chan body-chan error-chan timeout headers]
-              :as   options}]
+(defn- execute [method url
+                & {:keys [^AsyncHttpClient client
+                          status-chan
+                          headers-chan
+                          body-chan
+                          error-chan
+                          timeout
+                          headers] :as options}]
+
   (let [cl (or client default-client)
         chans {:status-chan  (or status-chan (chan 1))
                :headers-chan (or headers-chan (chan 1))
                :body-chan    (or body-chan (chan 1024))
                :error-chan   (or error-chan (chan 1))}
-        ^RequestBuilderBase request-builder (.prepareGet cl url)]
+        ^BoundRequestBuilder request-builder (BoundRequestBuilder.
+                                               cl
+                                               (convert-method-name method)
+                                               false)]
+    (.setUrl request-builder url)
 
     (when timeout
       (.setRequestTimeout request-builder timeout))
@@ -147,6 +160,9 @@
      :headers (chans :headers-chan)
      :body    (chans :body-chan)
      :error   (chans :error-chan)}))
+
+(defn get [url & options]
+  (apply execute :get url options))
 
 (defn sync-get [url & {:keys [client timeout headers]}]
   (let [out-chan (chan 1024)
