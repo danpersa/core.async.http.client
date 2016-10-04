@@ -9,6 +9,3 @@ auto-spec:
 
 watch-cucumber:
 	lein test-refresh
-
-watch-midje:
-	lein midje :autotest

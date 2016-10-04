@@ -1,5 +1,7 @@
 # core.async.http.client
 
+[![Build Status](https://travis-ci.org/danpersa/core.async.http.client.svg?branch=master)](https://travis-ci.org/danpersa/core.async.http.client)
+
 A Clojure library designed to ... well, that part is up to you.
 
 ## Usage
