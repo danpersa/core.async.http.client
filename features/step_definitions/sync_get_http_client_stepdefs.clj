@@ -9,15 +9,15 @@
       (let [client ((world/value) :client)
             prepared-headers ((world/value) :prepared-headers)
             response (http/sync-get (str "http://localhost:8083" endpoint-url)
-                                    :headers (or prepared-headers {})
-                                    :client client)]
+                                    {:headers (or prepared-headers {})
+                                     :client  client})]
         (world/reset-world! {:response response})))
 
 (When #"^I do a sync get to \"([^\"]*)\" with a request timeout of (\d+)$" [endpoint-url timeout]
       (let [client ((world/value) :client)
             response (http/sync-get (str "http://localhost:8083" endpoint-url)
-                                    :client client
-                                    :timeout (Integer. timeout))]
+                                    {:client  client
+                                     :timeout (Integer. timeout)})]
         (world/reset-world! {:response response})))
 
 (Then #"^I should get the body \"([^\"]*)\"$" [expected-body]

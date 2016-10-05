@@ -47,9 +47,9 @@
 (run-specs)
 
 (comment
-  (sync-get "http://www.example.com" :client default-client)
-  (sync-get "http://localhost:8083/endpoint-1" :client default-client)
+  (sync-get "http://www.example.com" {:client default-client})
+  (sync-get "http://localhost:8083/endpoint-1" {:client default-client})
   (sync-get "http://localhost:8083/sleep"
-            :timeout 100
-            :client default-client)
-  (sync-get "http://www.theuselessweb.com/" :client default-client))
+            {:timeout 100
+             :client  default-client})
+  (sync-get "http://www.theuselessweb.com/" {:client default-client}))
