@@ -129,14 +129,15 @@
           (doseq [header-value header-values]
             (.addHeader request-builder header-name header-value)))))))
 
-(defn request [method url
-               & [{:keys [^AsyncHttpClient client
-                          status-chan
-                          headers-chan
-                          body-chan
-                          error-chan
-                          timeout
-                          headers] :as options}]]
+(defn request [{:keys [^AsyncHttpClient client
+                       url
+                       method
+                       status-chan
+                       headers-chan
+                       body-chan
+                       error-chan
+                       timeout
+                       headers] :as options}]
 
   (let [cl (or client default-client)
         chans {:status-chan  (or status-chan (chan 1))
@@ -162,23 +163,22 @@
      :error   (chans :error-chan)}))
 
 (defn get [url & [options]]
-  (request :get url options))
+  (request (merge {:method :get :url url} options)))
 
-(defn sync-request [method url & [{:keys [^AsyncHttpClient client
-                                          timeout
-                                          headers]}]]
+(defn sync-request [{:keys [^AsyncHttpClient client
+                            url
+                            method
+                            timeout
+                            headers] :as options}]
   (let [out-chan (chan 1024)
         error-chan (chan 1)]
 
-    (request method
-             url
-             {:client       client
-              :status-chan  out-chan
-              :headers-chan out-chan
-              :body-chan    out-chan
-              :error-chan   error-chan
-              :timeout      timeout
-              :headers      headers})
+    (request (merge
+               options
+               {:status-chan  out-chan
+                :headers-chan out-chan
+                :body-chan    out-chan
+                :error-chan   error-chan}))
 
     (let [error-or-status (async/alts!! [error-chan out-chan])]
       (m/match [error-or-status]
@@ -200,7 +200,7 @@
                  {:error ex})))))
 
 (defn sync-get [url & [options]]
-  (sync-request :get url options))
+  (sync-request (merge {:method :get :url url} options)))
 
 (defn basic-get [client url & [options]]
   (.execute
