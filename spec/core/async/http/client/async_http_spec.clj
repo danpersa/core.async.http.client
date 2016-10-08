@@ -1,12 +1,11 @@
-(ns core.async.http.client-spec
+(ns core.async.http.client.async-http-spec
   (:require [speclj.core :refer :all]
             [midje.util :refer [testable-privates]]
-            [core.async.http.client :refer :all]
-            [core.async.http.client :as http])
+            [core.async.http.client.async-http :refer :all])
   (:import (io.netty.handler.codec.http DefaultHttpHeaders HttpHeaders)
            (org.asynchttpclient HttpResponseHeaders RequestBuilderBase Request)))
 
-(testable-privates core.async.http.client
+(testable-privates core.async.http.client.async-http
                    convert-headers
                    add-headers!
                    convert-method-name)
@@ -31,7 +30,7 @@
 (describe "add-headers"
           (it "should set the headers for the request"
               (let [^RequestBuilderBase request-builder
-                    (.prepareGet http/default-client "http://localhost:8083/endpoint-1")]
+                    (.prepareGet default-client "http://localhost:8083/endpoint-1")]
                 (add-headers! request-builder {"x-header-1" "value-1"
                                                "x-header-2" ["value-2" "value-3"]})
                 (let [^Request request (.build request-builder)

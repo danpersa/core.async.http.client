@@ -1,4 +1,4 @@
-(use '[core.async.http.client :as http])
+(use '[core.async.http.client.async-http :as http])
 (use '[world :as world])
 (use '[speclj.core :refer :all])
 

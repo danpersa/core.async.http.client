@@ -1,17 +1,21 @@
-(ns core.async.http.client
-  (:require [clojure.core.async :as async :refer [>!! <!! >! <! chan close!]]
+(ns core.async.http.client.async-http
+  (:require [core.async.http.protocols :as proto]
+            [core.async.http.client :as c]
             [core.async.http.utils :as utils]
-            [clojure.tools.logging :as log]
-            [clojure.core.match :as m])
+            [clojure.core.async :as async :refer [chan >!! <!!]]
+            [clojure.core.match :as m]
+            [clojure.tools.logging :as log])
   (:import (org.asynchttpclient
              DefaultAsyncHttpClient
              AsyncHandler
              HttpResponseBodyPart
              HttpResponseStatus
              HttpResponseHeaders
-             AsyncHandler$State AsyncHttpClient RequestBuilderBase RequestBuilder BoundRequestBuilder)
+             AsyncHandler$State
+             AsyncHttpClient
+             RequestBuilderBase
+             BoundRequestBuilder)
            (io.netty.handler.codec.http HttpHeaders)))
-
 
 (def default-client (DefaultAsyncHttpClient.))
 
@@ -84,13 +88,13 @@
   (let [close-all-channels (fn []
                              (when body-chan
                                (log/debug "Close body part chan")
-                               (close! body-chan))
+                               (async/close! body-chan))
                              (when status-chan
-                               (close! status-chan))
+                               (async/close! status-chan))
                              (when headers-chan
-                               (close! headers-chan))
+                               (async/close! headers-chan))
                              (when error-chan
-                               (close! error-chan)))
+                               (async/close! error-chan)))
         callbacks (-> {}
                       (utils/assoc-if (fn [_ _] (some? status-chan))
                                       :status-callback
@@ -129,82 +133,81 @@
           (doseq [header-value header-values]
             (.addHeader request-builder header-name header-value)))))))
 
-(defn request [{:keys [^AsyncHttpClient client
-                       url
-                       method
-                       status-chan
-                       headers-chan
-                       body-chan
-                       error-chan
-                       timeout
-                       headers] :as options}]
+(def client
+  (reify proto/Client
+    (request! [_ {:keys [^AsyncHttpClient client
+                         url
+                         method
+                         status-chan
+                         headers-chan
+                         body-chan
+                         error-chan
+                         timeout
+                         headers] :as options}]
 
-  (let [cl (or client default-client)
-        chans {:status-chan  (or status-chan (chan 1))
-               :headers-chan (or headers-chan (chan 1))
-               :body-chan    (or body-chan (chan 1024))
-               :error-chan   (or error-chan (chan 1))}
-        ^BoundRequestBuilder request-builder (BoundRequestBuilder.
-                                               cl
-                                               (convert-method-name method)
-                                               false)]
-    (.setUrl request-builder url)
+      (let [cl (or client default-client)
+            chans {:status-chan  (or status-chan (chan 1))
+                   :headers-chan (or headers-chan (chan 1))
+                   :body-chan    (or body-chan (chan 1024))
+                   :error-chan   (or error-chan (chan 1))}
+            ^BoundRequestBuilder request-builder (BoundRequestBuilder.
+                                                   cl
+                                                   (convert-method-name method)
+                                                   false)]
+        (.setUrl request-builder url)
 
-    (when timeout
-      (.setRequestTimeout request-builder timeout))
+        (when timeout
+          (.setRequestTimeout request-builder timeout))
 
-    (add-headers! request-builder headers)
+        (add-headers! request-builder headers)
 
-    (.execute
-      request-builder (create-core-async-handler chans))
-    {:status  (chans :status-chan)
-     :headers (chans :headers-chan)
-     :body    (chans :body-chan)
-     :error   (chans :error-chan)}))
+        (.execute
+          request-builder (create-core-async-handler chans))
+        {:status  (chans :status-chan)
+         :headers (chans :headers-chan)
+         :body    (chans :body-chan)
+         :error   (chans :error-chan)}))
+    (sync-request! [this {:keys [^AsyncHttpClient client
+                              url
+                              method
+                              timeout
+                              headers] :as options}]
+      (let [out-chan (chan 1024)
+            error-chan (chan 1)]
 
-(defn get [url & [options]]
-  (request (merge {:method :get :url url} options)))
+        (proto/request! this (merge
+                               options
+                               {:status-chan  out-chan
+                                :headers-chan out-chan
+                                :body-chan    out-chan
+                                :error-chan   error-chan}))
 
-(defn sync-request [{:keys [^AsyncHttpClient client
-                            url
-                            method
-                            timeout
-                            headers] :as options}]
-  (let [out-chan (chan 1024)
-        error-chan (chan 1)]
+        (let [error-or-status (async/alts!! [error-chan out-chan])]
+          (m/match [error-or-status]
+                   [[status out-chan]]
+                   (do
+                     (log/debug "Status" status)
+                     (let [headers (<!! out-chan)]
 
-    (request (merge
-               options
-               {:status-chan  out-chan
-                :headers-chan out-chan
-                :body-chan    out-chan
-                :error-chan   error-chan}))
+                       (loop [body-part (<!! out-chan)
+                              result ""]
+                         (if body-part
+                           (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
+                           {:status  status
+                            :headers headers
+                            :body    result}))))
+                   [[ex error-chan]]
+                   (do
+                     (log/error ex "Error")
+                     {:error ex})))))))
 
-    (let [error-or-status (async/alts!! [error-chan out-chan])]
-      (m/match [error-or-status]
-               [[status out-chan]]
-               (do
-                 (log/debug "Status" status)
-                 (let [headers (<!! out-chan)]
+(def request (partial c/request client))
 
-                   (loop [body-part (<!! out-chan)
-                          result ""]
-                     (if body-part
-                       (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
-                       {:status  status
-                        :headers headers
-                        :body    result}))))
-               [[ex error-chan]]
-               (do
-                 (log/error ex "Error")
-                 {:error ex})))))
+(def sync-request (partial c/sync-request client))
 
-(defn sync-get [url & [options]]
-  (sync-request (merge {:method :get :url url} options)))
+(def get (partial c/get client))
 
-(defn basic-get [client url & [options]]
-  (.execute
-    (.prepareGet client url) (create-basic-handler {})))
+(def sync-get (partial c/sync-get client))
 
 (comment
   (let [{:keys [body-chan]} (get "http://www.example.com" {:client default-client})]

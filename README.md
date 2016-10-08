@@ -30,6 +30,11 @@ VM Options: -Xbootclasspath/p:features/step_definitions:src:spec/resources:spec
 Program Arguments: "--plugin" "pretty"
 ```
 
+## Inspiration
+
+Got some inspiration from clj-http. I'm trying to keep the API as compatible as possible.
+Some more inspiration from httpurr to use protocols for multiple clients.
+
 ## License
 
 Released under the [MIT License](http://www.opensource.org/licenses/mit-license.php)
