@@ -21,6 +21,12 @@ With Leiningen/Boot:
 (http/get "http://site.com/resources/id")
 ```
 
+## POST
+
+```
+(http/post "http://site.com/resources" {:body "hello"})
+```
+
 ## Run Cucumber from IntelliJ
 ```
 Main Class: cucumber.api.cli.Main

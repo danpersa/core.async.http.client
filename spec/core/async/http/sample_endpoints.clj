@@ -47,6 +47,11 @@
                  (map (fn [[key value]] (str key ": " value)))
                  (str/join ", "))})
 
+(defn- body-echo-fragment [request]
+  {:status  200
+   :headers {"Content-Type" "application/json"}
+   :body    (request :body)})
+
 (defn- run-endpoint [name]
   (web/run (endpoint name) :host localhost :port 8083 :path (str "/" name)))
 
@@ -56,4 +61,5 @@
   (web/run error-endpoint :host localhost :port 8083 :path (str "/error"))
   (web/run error-sleep-endpoint :host localhost :port 8083 :path (str "/error-sleep"))
   (web/run sleep-endpoint :host localhost :port 8083 :path (str "/sleep"))
-  (web/run headers-fragment :host localhost :port 8083 :path (str "/x-headers")))
+  (web/run headers-fragment :host localhost :port 8083 :path (str "/x-headers"))
+  (web/run body-echo-fragment :host localhost :port 8083 :path (str "/echo")))

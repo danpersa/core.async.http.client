@@ -138,6 +138,7 @@
     (request! [_ {:keys [^AsyncHttpClient client
                          url
                          method
+                         body
                          status-chan
                          headers-chan
                          body-chan
@@ -159,6 +160,9 @@
         (when timeout
           (.setRequestTimeout request-builder timeout))
 
+        (when body
+          (.setBody request-builder body))
+
         (add-headers! request-builder headers)
 
         (.execute
@@ -167,11 +171,7 @@
          :headers (chans :headers-chan)
          :body    (chans :body-chan)
          :error   (chans :error-chan)}))
-    (sync-request! [this {:keys [^AsyncHttpClient client
-                              url
-                              method
-                              timeout
-                              headers] :as options}]
+    (sync-request! [this options]
       (let [out-chan (chan 1024)
             error-chan (chan 1)]
 
@@ -208,6 +208,10 @@
 (def get (partial c/get client))
 
 (def sync-get (partial c/sync-get client))
+
+(def post (partial c/post client))
+
+(def sync-post (partial c/sync-post client))
 
 (comment
   (let [{:keys [body-chan]} (get "http://www.example.com" {:client default-client})]

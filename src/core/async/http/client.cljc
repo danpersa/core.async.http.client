@@ -13,3 +13,9 @@
 
 (defn sync-get [^Client client url & [options]]
   (sync-request client (merge {:method :get :url url} options)))
+
+(defn post [^Client client url & [options]]
+  (request client (merge {:method :post :url url} options)))
+
+(defn sync-post [^Client client url & [options]]
+  (sync-request client (merge {:method :post :url url} options)))
