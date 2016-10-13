@@ -1,6 +1,8 @@
 (ns core.async.http.client
+  (:refer-clojure :exclude [get])
   (:require [core.async.http.protocols :as proto])
-  (:import (core.async.http.protocols Client)))
+  #?(:clj
+     (:import (core.async.http.protocols Client))))
 
 (defn request [^Client client options]
   (proto/request! client options))

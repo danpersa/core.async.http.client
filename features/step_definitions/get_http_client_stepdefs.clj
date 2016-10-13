@@ -1,7 +1,7 @@
 (use '[core.async.http.client.async-http :as http])
 (use '[clojure.core.async :refer [<!!]])
 (use '[world :as world])
-(use '[speclj.core :refer :all])
+(use '[clojure.test :refer :all])
 
 (Given #"^an empty world$" []
        (world/reset-world!))
@@ -23,7 +23,7 @@
   (((world/value) :result) name))
 
 (defn verify-chan [name]
-  (should-not-be-nil (get-result-chan name)))
+  (is (not (= nil (get-result-chan name)))))
 
 (Then #"^I should get back a map of channels$" []
       (verify-chan :status)
@@ -34,19 +34,19 @@
 (Then #"^I should get nil from the \"([^\"]*)\" chan$" [chan-name]
       (let [chan (get-result-chan (keyword chan-name))
             value-from-chan (<!! chan)]
-        (should-be-nil value-from-chan)))
+        (is (= nil value-from-chan))))
 
 (Then #"^I should get back \"([^\"]*)\" from the \"([^\"]*)\" chan$" [expected chan-name]
       (let [chan (get-result-chan (keyword chan-name))
             value-from-chan (<!! chan)]
-        (should= expected (str value-from-chan))))
+        (is (= expected (str value-from-chan)))))
 
 (Then #"^I should get back the UTF-8 string \"([^\"]*)\" as byte array from the \"([^\"]*)\" chan$" [expected chan-name]
       (let [chan (get-result-chan (keyword chan-name))
             value-from-chan (<!! chan)]
-        (should= expected (String. value-from-chan "UTF-8"))))
+        (is (= expected (String. value-from-chan "UTF-8")))))
 
 (Then #"^I should get an error from the \"([^\"]*)\" chan$" [chan-name]
       (let [chan (get-result-chan (keyword chan-name))
             value-from-chan (<!! chan)]
-        (should-be-a Exception value-from-chan)))
+        (is (instance? Exception value-from-chan))))

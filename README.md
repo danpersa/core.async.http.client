@@ -32,7 +32,7 @@ With Leiningen/Boot:
 Main Class: cucumber.api.cli.Main
 Glue: features/step_definitions
 Feature Folder: .... core.async.http.client/features (Use full path)
-VM Options: -Xbootclasspath/p:features/step_definitions:src:spec/resources:spec
+VM Options: -Xbootclasspath/p:features/step_definitions:src:test/resources:test
 Program Arguments: "--plugin" "pretty"
 ```
 

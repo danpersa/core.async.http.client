@@ -9,7 +9,7 @@ cache:
     - $HOME/.ivy2
 
 script:
-  - lein spec spec -f d
+  - lein test
   - lein cucumber --plugin pretty
 jdk:
   - oraclejdk8

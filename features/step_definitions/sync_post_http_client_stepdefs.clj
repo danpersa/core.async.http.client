@@ -1,7 +1,6 @@
 (use '[core.async.http.client.async-http :as http])
 (use '[clojure.core.async :refer [<!!]])
 (use '[world :as world])
-(use '[speclj.core :refer :all])
 
 
 (When #"^I do a sync post with \"([^\"]*)\" to \"([^\"]*)\"$" [body endpoint-url]

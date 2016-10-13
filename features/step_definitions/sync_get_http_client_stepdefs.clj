@@ -1,6 +1,6 @@
 (use '[core.async.http.client.async-http :as http])
 (use '[world :as world])
-(use '[speclj.core :refer :all])
+(use '[clojure.test :refer :all])
 
 (Given #"^an http client$" []
        (world/swap-world! assoc :client http/default-client))
@@ -21,11 +21,11 @@
         (world/reset-world! {:response response})))
 
 (Then #"^I should get the body \"([^\"]*)\"$" [expected-body]
-      (should= expected-body (world/response-body)))
+      (is (= expected-body (world/response-body))))
 
 (Then #"^I should get the (\d+) status$" [expected-status]
-      (should= (Integer. expected-status)
-               (world/response-status)))
+      (is (= (Integer. expected-status)
+             (world/response-status))))
 
 (Then #"^I should get an error$" []
-      (should-not-be-nil (((world/value) :response) :error)))
+      (is (not (= nil (((world/value) :response) :error)))))
