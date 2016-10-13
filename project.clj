@@ -3,13 +3,13 @@
   :url "https://github.com/danpersa/core.async.http.client"
   :license {:name "MIT License"
             :url  "https://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure                     "1.9.0-alpha11"]
+  :dependencies [[org.clojure/clojure                     "1.9.0-alpha13"]
                  [org.clojure/clojurescript               "1.9.229"]
-                 [org.asynchttpclient/async-http-client   "2.0.12"]
-                 [org.clojure/core.async                  "0.2.385"]
+                 [org.asynchttpclient/async-http-client   "2.0.16"]
+                 [org.clojure/core.async                  "0.2.395"]
                  [org.clojure/core.match                  "0.3.0-alpha4"]
                  [org.clojure/tools.logging               "0.3.1"]
-                 [devcards                                "0.2.1-7"]
+                 [devcards                                "0.2.2"]
                  [lein-doo                                "0.1.7"]]
   :plugins [[lein-cljsbuild                    "1.1.4"]
             [lein-figwheel                     "0.5.8"]
@@ -49,9 +49,10 @@
                        :cucumber-feature-paths ["features"]
                        :resource-paths         ["test/resources"]
                        :plugins                [[org.clojars.punkisdead/lein-cucumber "1.0.7"]
-                                                [com.jakemccrary/lein-test-refresh    "0.17.0"]]
+                                                [com.jakemccrary/lein-test-refresh    "0.17.0"]
+                                                [lein-ancient                         "0.6.10"]]
                        :dependencies           [[ch.qos.logback/logback-classic       "1.1.7"]
-                                                [info.cukes/cucumber-clojure          "1.2.4"]
+                                                [info.cukes/cucumber-clojure          "1.2.5"]
                                                 [midje                                "1.9.0-alpha5"]
                                                 [org.immutant/web                     "2.1.5"]]}}
   :test-selectors {:default (complement :acceptance)

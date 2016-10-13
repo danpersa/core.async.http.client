@@ -13,6 +13,9 @@ watch-changed-tests:
 watch-cucumber:
 	lein test-refresh :only :acceptance
 
+check-outdated-libs:
+	lein ancient
+
 # clojurescript
 
 run-phantom-tests:
@@ -23,3 +26,4 @@ watch-phantom-tests:
 
 run-browser-tests:
 	lein figwheel devcards-test
+
