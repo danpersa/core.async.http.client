@@ -3,14 +3,12 @@
   :url "https://github.com/danpersa/core.async.http.client"
   :license {:name "MIT License"
             :url  "https://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure                     "1.9.0-alpha13"]
-                 [org.clojure/clojurescript               "1.9.229"]
+  :dependencies [[org.clojure/clojure                     "1.9.0-alpha13" :scope "provided"]
+                 [org.clojure/clojurescript               "1.9.229"       :scope "provided"]
                  [org.asynchttpclient/async-http-client   "2.0.16"]
                  [org.clojure/core.async                  "0.2.395"]
                  [org.clojure/core.match                  "0.3.0-alpha4"]
-                 [org.clojure/tools.logging               "0.3.1"]
-                 [devcards                                "0.2.2"]
-                 [lein-doo                                "0.1.7"]]
+                 [org.clojure/tools.logging               "0.3.1"]]
   :plugins [[lein-cljsbuild                    "1.1.4"]
             [lein-figwheel                     "0.5.8"]
             [lein-doo                          "0.1.7"]]
@@ -38,9 +36,9 @@
                                :figwheel     {:devcards true}
                                :compiler     {:main                 runners.browser
                                               :optimizations        :none
-                                              :asset-path           "cljs/tests/out"
-                                              :output-dir           "resources/public/cljs/tests/out"
-                                              :output-to            "resources/public/cljs/tests/all-tests.js"
+                                              :asset-path           "cljs/devcard-tests/out"
+                                              :output-dir           "resources/public/cljs/devcard-tests/out"
+                                              :output-to            "resources/public/cljs/devcard-tests/all-tests.js"
                                               :source-map-timestamp true}}]
               :test-commands {"test" ["lein" "doo" "phantom" "test" "once"]}}
   :profiles {:uberjar {:aot :all}
@@ -54,7 +52,9 @@
                        :dependencies           [[ch.qos.logback/logback-classic       "1.1.7"]
                                                 [info.cukes/cucumber-clojure          "1.2.5"]
                                                 [midje                                "1.9.0-alpha5"]
-                                                [org.immutant/web                     "2.1.5"]]}}
+                                                [org.immutant/web                     "2.1.5"]
+                                                [devcards                             "0.2.2"]
+                                                [lein-doo                             "0.1.7"]]}}
   :test-selectors {:default (complement :acceptance)
                    :acceptance :acceptance
                    :all (constantly true)}
