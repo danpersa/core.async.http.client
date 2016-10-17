@@ -11,7 +11,8 @@
                  [org.clojure/tools.logging               "0.3.1"]]
   :plugins [[lein-cljsbuild                    "1.1.4"]
             [lein-figwheel                     "0.5.8"]
-            [lein-doo                          "0.1.7"]]
+            [lein-doo                          "0.1.7"]
+            [lein-npm                          "0.6.2"]]
   :target-path "target/%s"
   :clean-targets ^{:protect false} [:target-path "out" "resources/public/cljs"]
   :figwheel {:css-dirs ["resources/public/css"]}
@@ -39,7 +40,24 @@
                                               :asset-path           "cljs/devcard-tests/out"
                                               :output-dir           "resources/public/cljs/devcard-tests/out"
                                               :output-to            "resources/public/cljs/devcard-tests/all-tests.js"
-                                              :source-map-timestamp true}}]
+                                              :source-map-timestamp true}}
+                              {:id           "node-test"
+                               :source-paths ["src" "test"]
+                               :compiler     {:main          runners.doo-node
+                                              :optimizations :simple
+                                              :asset-path    "cljs/node-tests/out"
+                                              :output-dir    "resources/public/cljs/node-tests/out"
+                                              :output-to     "resources/public/cljs/node-tests/all-tests.js"
+                                              :cache-analysis true
+                                              :target        :nodejs}}
+                              {:id           "node-prod"
+                               :source-paths ["src"]
+                               :compiler     {:main          core.async.http.client.node
+                                              :optimizations :simple
+                                              :asset-path    "cljs/node-prod/out"
+                                              :output-dir    "resources/public/cljs/node-prod/out"
+                                              :output-to     "resources/public/cljs/node-prod/main.js"
+                                              :target        :nodejs}}]
               :test-commands {"test" ["lein" "doo" "phantom" "test" "once"]}}
   :profiles {:uberjar {:aot :all}
              :dev     {:source-paths           ["dev"]

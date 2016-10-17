@@ -1,4 +1,5 @@
 (ns core.async.http.client.async-http
+  (:refer-clojure :exclude [get])
   (:require [core.async.http.protocols :as proto]
             [core.async.http.client :as c]
             [core.async.http.utils :as utils]
