@@ -31,5 +31,5 @@ run-browser-tests:
 	lein figwheel devcards-test
 
 # node
-run-node-tests
+run-node-tests:
 	lein doo node node-test once
