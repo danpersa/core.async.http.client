@@ -11,5 +11,7 @@ cache:
 script:
   - lein test
   - lein cucumber --plugin pretty
+  - lein run&
+  - lein doo phantom test once
 jdk:
   - oraclejdk8
