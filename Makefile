@@ -19,6 +19,12 @@ watch-cucumber:
 check-outdated-libs:
 	lein ancient
 
+start-endpoints:
+	lein run
+
+start-endpoints-bg:
+	lein run&
+
 # clojurescript
 
 run-phantom-tests:

@@ -32,37 +32,38 @@
                                               :optimizations :none
                                               :output-dir    "resources/public/cljs/tests/out"
                                               :output-to     "resources/public/cljs/tests/all-tests.js"}}
-                              {:id           "devcards-test"
-                               :source-paths ["src" "test"]
-                               :figwheel     {:devcards true}
-                               :compiler     {:main                 runners.browser
-                                              :optimizations        :none
-                                              :asset-path           "cljs/devcard-tests/out"
-                                              :output-dir           "resources/public/cljs/devcard-tests/out"
-                                              :output-to            "resources/public/cljs/devcard-tests/all-tests.js"
-                                              :source-map-timestamp true}}
-                              {:id           "node-test"
-                               :source-paths ["src" "test"]
-                               :compiler     {:main          runners.doo-node
-                                              :optimizations :simple
-                                              :asset-path    "cljs/node-tests/out"
-                                              :output-dir    "resources/public/cljs/node-tests/out"
-                                              :output-to     "resources/public/cljs/node-tests/all-tests.js"
-                                              :cache-analysis true
-                                              :target        :nodejs}}
-                              {:id           "node-prod"
-                               :source-paths ["src"]
-                               :compiler     {:main          core.async.http.client.node
-                                              :optimizations :simple
-                                              :asset-path    "cljs/node-prod/out"
-                                              :output-dir    "resources/public/cljs/node-prod/out"
-                                              :output-to     "resources/public/cljs/node-prod/main.js"
-                                              :target        :nodejs}}]
+                               {:id           "devcards-test"
+                                :source-paths ["src" "test"]
+                                :figwheel     {:devcards true}
+                                :compiler     {:main                 runners.browser
+                                               :optimizations        :none
+                                               :asset-path           "cljs/devcard-tests/out"
+                                               :output-dir           "resources/public/cljs/devcard-tests/out"
+                                               :output-to            "resources/public/cljs/devcard-tests/all-tests.js"
+                                               :source-map-timestamp true}}
+                                             {:id           "node-test"
+                                              :source-paths ["src" "test"]
+                                              :compiler     {:main           runners.doo-node
+                                                             :optimizations  :simple
+                                                             :asset-path     "cljs/node-tests/out"
+                                                             :output-dir     "resources/public/cljs/node-tests/out"
+                                                             :output-to      "resources/public/cljs/node-tests/all-tests.js"
+                                                             :cache-analysis true
+                                                             :target         :nodejs}}
+                               {:id           "node-prod"
+                                :source-paths ["src"]
+                                :compiler     {:main          core.async.http.client.node
+                                               :optimizations :simple
+                                               :asset-path    "cljs/node-prod/out"
+                                               :output-dir    "resources/public/cljs/node-prod/out"
+                                               :output-to     "resources/public/cljs/node-prod/main.js"
+                                               :target        :nodejs}}]
               :test-commands {"test" ["lein" "doo" "phantom" "test" "once"]}}
   :profiles {:uberjar {:aot :all}
              :dev     {:source-paths           ["dev"]
                        :test-paths             ["features" "features/step_definitions" "test"]
                        :cucumber-feature-paths ["features"]
+                       :main                   core.async.http.sample-endpoints
                        :resource-paths         ["test/resources"]
                        :plugins                [[org.clojars.punkisdead/lein-cucumber "1.0.7"]
                                                 [com.jakemccrary/lein-test-refresh    "0.17.0"]

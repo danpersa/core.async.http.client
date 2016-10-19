@@ -24,9 +24,6 @@
             :abort    AsyncHandler$State/ABORT
             :upgrade  AsyncHandler$State/UPGRADE})
 
-(defn- convert-method-name [method]
-  (.toUpperCase (name method)))
-
 (defn- convert-headers [^HttpResponseHeaders headers]
   (let [^HttpHeaders http-headers (.getHeaders headers)]
     (->> (.names http-headers)
@@ -154,7 +151,7 @@
                    :error-chan   (or error-chan (chan 1))}
             ^BoundRequestBuilder request-builder (BoundRequestBuilder.
                                                    cl
-                                                   (convert-method-name method)
+                                                   (c/convert-method-name method)
                                                    false)]
         (.setUrl request-builder url)
 

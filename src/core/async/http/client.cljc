@@ -21,3 +21,6 @@
 
 (defn sync-post [^Client client url & [options]]
   (sync-request client (merge {:method :post :url url} options)))
+
+(defn convert-method-name [method]
+  (.toUpperCase (name method)))
