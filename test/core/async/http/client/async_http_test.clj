@@ -7,8 +7,7 @@
 
 (testable-privates core.async.http.client.async-http
                    convert-headers
-                   add-headers!
-                   convert-method-name)
+                   add-headers!)
 
 (def ^:private http-headers
   (let [http-headers (DefaultHttpHeaders.)]
@@ -36,9 +35,6 @@
       (is (= #{"x-header-1" "x-header-2"} (.names headers)))
       (is (= ["value-1"] (.getAll headers "x-header-1")))
       (is (= ["value-2" "value-3"] (.getAll headers "x-header-2"))))))
-
-(deftest convert-method-test
-  (is (= "GET" (convert-method-name :get))))
 
 (comment
   (sync-get "http://www.example.com" {:client default-client})
