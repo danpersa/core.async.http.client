@@ -2,15 +2,14 @@
   (:refer-clojure :exclude [get])
   (:require [cljs.nodejs :as node]))
 
-
-
 (def ^:private http (node/require "http"))
 (def ^:private https (node/require "https"))
 (def ^:private url (node/require "url"))
 (def ^:private querystring (node/require "querystring"))
 
 (def options {:hostname "localhost"
-              :port     8087
+              :port     8083
+              :pathnam  "endpoint-1"
               :method   "GET"})
 
 (defn sample-request [done]

@@ -17,7 +17,7 @@
   :clean-targets ^{:protect false} [:target-path "out" "resources/public/cljs"]
   :figwheel {:css-dirs ["resources/public/css"]}
   :doo {:paths {:phantom "phantomjs --web-security=false"
-                :node    "node --trace-gc --trace-gc-verbose"}}
+                :node    "node"}}
   :cljsbuild {
               :builds        [{:id           "dev"          ; development configuration
                                :source-paths ["src"]        ; Paths to monitor for build

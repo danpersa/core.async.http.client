@@ -1,5 +1,8 @@
 language: clojure
 
+node_js:
+  - "6"
+
 sudo: false
 
 cache:
@@ -13,5 +16,6 @@ script:
   - lein cucumber --plugin pretty
   - lein run&
   - lein doo phantom test once
+  - lein doo node node-test once
 jdk:
   - oraclejdk8
