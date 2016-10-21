@@ -39,3 +39,6 @@ run-browser-tests:
 # node
 run-node-tests:
 	lein doo node node-test once
+
+watch-node-tests:
+	lein doo node node-test auto
