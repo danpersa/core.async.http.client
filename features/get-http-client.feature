@@ -33,7 +33,8 @@ Feature: Get For The Http Client
     And I should get nil from the "body" chan
 
   Scenario: Do an async get to an endpoint which times out
-    When I do a get to "/sleep" with a request timeout of 100
+    When I set the timeout for my request to 100
+    And I do a get to "/sleep"
     Then I should get an error from the "error" chan
     And I should get nil from the "status" chan
     And I should get nil from the "body" chan

@@ -24,5 +24,6 @@ Feature: Sync Get For The Http Client
     And I should get the body "Hello world 500"
 
   Scenario: Do a sync get to an endpoint which times out
-    When I do a sync get to "/sleep" with a request timeout of 100
+    When I set the timeout for my request to 100
+    When I do a sync get to "/sleep"
     Then I should get an error

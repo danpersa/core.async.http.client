@@ -8,16 +8,15 @@
 
 (When #"^I do a get to \"([^\"]*)\"$" [endpoint-url]
       (let [client ((world/value) :client)
+            headers ((world/value) :prepared-headers)
+            timeout ((world/value) :prepared-timeout)
             response (http/get (str "http://localhost:8083" endpoint-url)
-                               {:client client})]
+                               {:timeout (Integer. (or timeout 2000))
+                                :client  client})]
         (world/reset-world! {:result response})))
 
-(When #"^I do a get to \"([^\"]*)\" with a request timeout of (\d+)$" [endpoint-url timeout]
-      (let [client ((world/value) :client)
-            response (http/get (str "http://localhost:8083" endpoint-url)
-                               {:client  client
-                                :timeout (Integer. timeout)})]
-        (world/reset-world! {:result response})))
+(When #"^I set the timeout for my request to (\d+)$" [timeout]
+      (world/swap-world! assoc :prepared-timeout timeout))
 
 (defn get-result-chan [name]
   (((world/value) :result) name))

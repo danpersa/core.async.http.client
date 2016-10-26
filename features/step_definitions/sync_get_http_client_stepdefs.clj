@@ -7,17 +7,12 @@
 
 (When #"^I do a sync get to \"([^\"]*)\"$" [endpoint-url]
       (let [client ((world/value) :client)
-            prepared-headers ((world/value) :prepared-headers)
+            headers ((world/value) :prepared-headers)
+            timeout ((world/value) :prepared-timeout)
             response (http/sync-get (str "http://localhost:8083" endpoint-url)
-                                    {:headers (or prepared-headers {})
+                                    {:headers (or headers {})
+                                     :timeout (Integer. (or timeout 2000))
                                      :client  client})]
-        (world/reset-world! {:response response})))
-
-(When #"^I do a sync get to \"([^\"]*)\" with a request timeout of (\d+)$" [endpoint-url timeout]
-      (let [client ((world/value) :client)
-            response (http/sync-get (str "http://localhost:8083" endpoint-url)
-                                    {:client  client
-                                     :timeout (Integer. timeout)})]
         (world/reset-world! {:response response})))
 
 (Then #"^I should get the body \"([^\"]*)\"$" [expected-body]
