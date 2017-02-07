@@ -41,7 +41,7 @@
                           :port     (.-port parsed-url)
                           :path     (.-pathname parsed-url)
                           :method   (c/convert-method-name method)
-                          :headers  (clj->js headers)
+                          :headers  (if headers (clj->js headers) #js {})
                           ;:query    (.-query parsed-url)
                           }
             chans {:status-chan  (or status-chan (chan 1))
@@ -68,7 +68,7 @@
                            (println "close request")))))]
 
 
-        (if timeout
+        (when timeout
           (.setTimeout req
                        timeout
                        (fn []
@@ -80,6 +80,7 @@
                (go (>! (chans :error-chan) :error)
                    (close-chans chans))))
 
+        (when body (.write req body))
         (.end req)
         {:status  (chans :status-chan)
          :headers (chans :headers-chan)

@@ -85,7 +85,7 @@
                url
                (c/convert-method-name method)
                body
-               (clj->js headers))
+               (if headers (clj->js headers) #js {}))
 
         {:status  (chans :status-chan)
          :headers (chans :headers-chan)

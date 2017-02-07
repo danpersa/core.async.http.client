@@ -69,3 +69,15 @@
                  (is (= 200 (<! status-chan)))
                  (is (= "x-header-1: value-1, x-header-2: value-2, x-header-3: value-3,value-4" (<! body-chan)))
                  (done))))))
+
+(deftest ^:acceptance post-test
+         (testing "Successful async post"
+           (async done
+             (let [response (http/post (str endpoints-url "/echo")
+                                       {:body "Hello world"})
+                   body-chan (response :body)
+                   status-chan (response :status)]
+               (go
+                 (is (= 200 (<! status-chan)))
+                 (is (= "Hello world" (<! body-chan)))
+                 (done))))))
