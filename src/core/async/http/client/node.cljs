@@ -17,6 +17,12 @@
               :pathname "endpoint-1"
               :method   "GET"})
 
+(defn- close-chans [chans]
+  (close! (chans :status-chan))
+  (close! (chans :headers-chan))
+  (close! (chans :body-chan))
+  (close! (chans :error-chan)))
+
 (def client
   (reify proto/Client
     (request! [_ {:keys [url
@@ -35,6 +41,7 @@
                           :port     (.-port parsed-url)
                           :path     (.-pathname parsed-url)
                           :method   (c/convert-method-name method)
+                          :headers  (clj->js headers)
                           ;:query    (.-query parsed-url)
                           }
             chans {:status-chan  (or status-chan (chan 1))
@@ -48,30 +55,31 @@
                       (>! (chans :status-chan) (.-statusCode res))
                       (>! (chans :headers-chan) (js->clj (.-headers res))))
 
-                    (.on res "connect"
-                         (fn [response]
-                           (println "got response")))
                     (.on res "data"
                          (fn [chunk]
-                           (println "got something " (.toString chunk "utf-8"))
+                           ;(println "got something " (.toString chunk "utf-8"))
                            (go (>! (chans :body-chan) (.toString chunk "utf-8")))))
                     (.on res "end"
                          (fn []
-                           (println "end request")))
+                           (go
+                             (close-chans chans))))
                     (.on res "close"
                          (fn []
                            (println "close request")))))]
 
+
+        (if timeout
+          (.setTimeout req
+                       timeout
+                       (fn []
+                         (go (>! (chans :error-chan) :timeout)
+                             (close-chans chans)))))
         (.on req "error"
              (fn [err]
                (println "got some err " err)
-               (do
-                 (close! (chans :status-chan))
-                 (close! (chans :headers-chan))
-                 (close! (chans :body-chan))
-                 (go (>! (chans :error-chan) :timeout)))))
+               (go (>! (chans :error-chan) :error)
+                   (close-chans chans))))
 
-        (println "Node options: " node-options)
         (.end req)
         {:status  (chans :status-chan)
          :headers (chans :headers-chan)

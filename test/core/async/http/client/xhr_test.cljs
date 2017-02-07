@@ -30,7 +30,7 @@
                  (is (= "streaming-endpoint-1 part-0 part-1 part-2" (<! body-chan)))
                  (done))))))
 
-(deftest ^:acceptance error-enpoint
+(deftest ^:acceptance error-endpoint
          (testing "Do an async get to an endpoint which returns 500"
            (async done
              (let [response (http/get (str endpoints-url "/error"))
@@ -54,4 +54,18 @@
                  (is (= :timeout (<! error-chan)))
                  (is (= nil (<! status-chan)))
                  (is (= nil (<! body-chan)))
+                 (done))))))
+
+(deftest ^:acceptance headers-test
+         (testing "Successfully specify headers"
+           (async done
+             (let [response (http/get (str endpoints-url "/x-headers")
+                                      {:headers {"x-header-1" "value-1"
+                                                 "x-header-2" "value-2"
+                                                 "x-header-3" ["value-3" "value-4"]}})
+                   body-chan (response :body)
+                   status-chan (response :status)]
+               (go
+                 (is (= 200 (<! status-chan)))
+                 (is (= "x-header-1: value-1, x-header-2: value-2, x-header-3: value-3,value-4" (<! body-chan)))
                  (done))))))
