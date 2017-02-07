@@ -3,8 +3,7 @@
   (:require [core.async.http.protocols :as proto]
             [core.async.http.client :as c]
             [core.async.http.utils :as utils]
-            [clojure.core.async :as async :refer [go chan >!! <!!]]
-            [clojure.core.match :as m]
+            [clojure.core.async :as async :refer [chan >!! <!!]]
             [clojure.tools.logging :as log])
   (:import (org.asynchttpclient
              DefaultAsyncHttpClient
@@ -173,49 +172,13 @@
         {:status  (chans :status-chan)
          :headers (chans :headers-chan)
          :body    (chans :body-chan)
-         :error   (chans :error-chan)}))
-    (sync-request! [this options]
-      (let [out-chan (chan 1024)
-            error-chan (chan 1)]
-
-        (proto/request! this (merge
-                               options
-                               {:status-chan  out-chan
-                                :headers-chan out-chan
-                                :body-chan    out-chan
-                                :error-chan   error-chan}))
-
-        (let [error-or-status (async/alts!! [out-chan error-chan] :priority true)]
-          (m/match [error-or-status]
-                   [[status out-chan]]
-                   (do
-                     (log/debug "Status" status)
-                     (let [headers (<!! out-chan)]
-                       (log/debug "Headers" headers)
-                       (loop [body-part (<!! out-chan)
-                              result ""]
-                         (log/debug "Got part" body-part)
-                         (if body-part
-                           (recur (<!! out-chan) (str result body-part))
-                           {:status  status
-                            :headers headers
-                            :body    result}))))
-                   [[ex error-chan]]
-                   (do
-                     (log/error ex "Error")
-                     {:error ex})))))))
+         :error   (chans :error-chan)}))))
 
 (def request (partial c/request client))
 
-(def sync-request (partial c/sync-request client))
-
 (def get (partial c/get client))
 
-(def sync-get (partial c/sync-get client))
-
 (def post (partial c/post client))
-
-(def sync-post (partial c/sync-post client))
 
 (comment
   (let [{:keys [body-chan]} (get "http://www.example.com" {:client default-client})]

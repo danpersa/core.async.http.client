@@ -85,10 +85,7 @@
         {:status  (chans :status-chan)
          :headers (chans :headers-chan)
          :body    (chans :body-chan)
-         :error   (chans :error-chan)}))
-
-    (sync-request! [this options]
-      nil)))
+         :error   (chans :error-chan)}))))
 
 
 (def request (partial c/request client))

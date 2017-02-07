@@ -1,7 +1,6 @@
 (ns core.async.http.client.xhr
   (:refer-clojure :exclude [get])
-  (:require [goog.net.XhrIo :as xhr]
-            [goog.events :as events]
+  (:require [goog.events :as events]
             [cljs.core.async :refer [chan close! >! <!]]
             [core.async.http.client :as c]
             [core.async.http.protocols :as proto])
@@ -90,11 +89,7 @@
         {:status  (chans :status-chan)
          :headers (chans :headers-chan)
          :body    (chans :body-chan)
-         :error   (chans :error-chan)}))
-
-    (sync-request! [this options]
-      nil)))
-
+         :error   (chans :error-chan)}))))
 
 (def request (partial c/request client))
 
