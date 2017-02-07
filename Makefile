@@ -1,5 +1,5 @@
 acceptance-tests:
-	lein cucumber --plugin pretty
+	lein test :acceptance
 
 all-tests:
 	lein test :all

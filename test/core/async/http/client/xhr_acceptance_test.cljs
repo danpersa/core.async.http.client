@@ -1,4 +1,4 @@
-(ns core.async.http.client.xhr-test
+(ns core.async.http.client.xhr-acceptance-test
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require [cljs.test :refer-macros [is testing async]]
             [core.async.http.client.xhr :as http]

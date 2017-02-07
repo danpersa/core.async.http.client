@@ -3,7 +3,7 @@
   (:require [core.async.http.protocols :as proto]
             [core.async.http.client :as c]
             [core.async.http.utils :as utils]
-            [clojure.core.async :as async :refer [chan >!! <!!]]
+            [clojure.core.async :as async :refer [go chan >!! <!!]]
             [clojure.core.match :as m]
             [clojure.tools.logging :as log])
   (:import (org.asynchttpclient
@@ -107,12 +107,15 @@
                       (utils/assoc-if (fn [_ _] (some? body-chan))
                                       :body-part-callback
                                       (fn [this body-part]
-                                        (>!! body-chan body-part)
+                                        (if (not (empty? body-part))
+                                          (>!! body-chan (String. body-part "UTF-8")))
                                         (state :continue)))
                       (utils/assoc-if (fn [_ _] (some? error-chan))
                                       :error-callback
                                       (fn [this ^Throwable error]
-                                        (>!! error-chan error)
+                                        (if (instance? java.util.concurrent.TimeoutException error)
+                                          (>!! error-chan :timeout)
+                                          (>!! error-chan :error))
                                         (close-all-channels)))
                       (assoc :completed-callback (fn [this]
                                                    (log/debug "Completed callback")
@@ -153,6 +156,8 @@
                                                    cl
                                                    (c/convert-method-name method)
                                                    false)]
+        (log/debug "Doing a call to" url)
+
         (.setUrl request-builder url)
 
         (when timeout
@@ -180,17 +185,18 @@
                                 :body-chan    out-chan
                                 :error-chan   error-chan}))
 
-        (let [error-or-status (async/alts!! [error-chan out-chan])]
+        (let [error-or-status (async/alts!! [out-chan error-chan] :priority true)]
           (m/match [error-or-status]
                    [[status out-chan]]
                    (do
                      (log/debug "Status" status)
                      (let [headers (<!! out-chan)]
-
+                       (log/debug "Headers" headers)
                        (loop [body-part (<!! out-chan)
                               result ""]
+                         (log/debug "Got part" body-part)
                          (if body-part
-                           (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
+                           (recur (<!! out-chan) (str result body-part))
                            {:status  status
                             :headers headers
                             :body    result}))))

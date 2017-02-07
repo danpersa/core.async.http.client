@@ -13,8 +13,8 @@ cache:
 
 script:
   - lein test
-  - lein cucumber --plugin pretty
   - lein run&
+  - lein test :acceptance
   - lein doo phantom test once
   - lein doo node node-test once
 jdk:

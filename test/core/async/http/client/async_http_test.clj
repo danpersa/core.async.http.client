@@ -1,4 +1,5 @@
 (ns core.async.http.client.async-http-test
+  (:refer-clojure :exclude [get])
   (:require [clojure.test :refer :all]
             [midje.util :refer [testable-privates]]
             [core.async.http.client.async-http :refer :all])

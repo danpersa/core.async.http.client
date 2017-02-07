@@ -1,4 +1,4 @@
-(ns core.async.http.client.node-test
+(ns core.async.http.client.node-acceptance-test
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.test :refer-macros [async deftest is testing]]
             [cljs.core.async :refer [chan put! <!]]
