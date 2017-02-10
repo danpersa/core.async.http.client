@@ -33,6 +33,7 @@ run-phantom-tests:
 watch-phantom-tests:
 	lein doo phantom test auto
 
+# to run the tests: http://0.0.0.0:3449/tests.html
 run-browser-tests:
 	lein figwheel devcards-test
 
