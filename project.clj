@@ -1,4 +1,4 @@
-(defproject core.async.http.client "0.1.0"
+(defproject core.async.http.client "0.2.0-SNAPSHOT"
   :description "Async http client using core.async"
   :url "https://github.com/danpersa/core.async.http.client"
   :license {:name "MIT License"
