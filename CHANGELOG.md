@@ -3,22 +3,18 @@ All notable changes to this project will be documented in this file. This change
 
 ## [Unreleased]
 ### Changed
-- Add a new arity to `make-widget-async` to provide a different widget shape.
 
-## [0.1.1] - 2016-08-25
-### Changed
-- Documentation on how to make the widgets.
+## [0.2.0] - 2016-08-25
+### Added
+- Added support for clojurescript
+- Added unit tests and acceptance tests using clojure.test
 
 ### Removed
-- `make-widget-sync` - we're all async, all the time.
-
-### Fixed
-- Fixed widget maker to keep working when daylight savings switches over.
+- Removed the cucumber support for acceptance tests, as cucumber is not supported by cljs
 
 ## 0.1.0 - 2016-08-25
 ### Added
-- Files from the new template.
-- Widget maker public API - `make-widget-sync`.
+- Initial version with support for clojure
 
-[Unreleased]: https://github.com/your-name/core.async.http.client/compare/0.1.1...HEAD
-[0.1.1]: https://github.com/your-name/core.async.http.client/compare/0.1.0...0.1.1
+[Unreleased]: https://github.com/your-name/core.async.http.client/compare/0.2.0...HEAD
+[0.2.0]: https://github.com/your-name/core.async.http.client/compare/0.1.0...0.2.0
