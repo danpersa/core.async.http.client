@@ -9,5 +9,5 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="core.async.http.client" level="debug"/>
+    <logger name="core.async.http.client" level="info"/>
 </configuration>
