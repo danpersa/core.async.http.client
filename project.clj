@@ -63,15 +63,12 @@
               :test-commands {"test" ["lein" "doo" "phantom" "test" "once"]}}
   :profiles {:uberjar {:aot :all}
              :dev     {:source-paths           ["dev"]
-                       :test-paths             ["features" "features/step_definitions" "test"]
-                       :cucumber-feature-paths ["features"]
+                       :test-paths             ["test"]
                        :main                   core.async.http.sample-endpoints
                        :resource-paths         ["test/resources"]
-                       :plugins                [[org.clojars.punkisdead/lein-cucumber "1.0.7"]
-                                                [com.jakemccrary/lein-test-refresh    "0.17.0"]
+                       :plugins                [[com.jakemccrary/lein-test-refresh    "0.17.0"]
                                                 [lein-ancient                         "0.6.10"]]
                        :dependencies           [[ch.qos.logback/logback-classic       "1.1.7"]
-                                                [info.cukes/cucumber-clojure          "1.2.5"]
                                                 [midje                                "1.9.0-alpha5"]
                                                 [org.immutant/web                     "2.1.5"]
                                                 [devcards                             "0.2.2"]

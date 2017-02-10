@@ -1,4 +1,4 @@
-acceptance-tests:
+run-acceptance-tests:
 	lein test :acceptance
 
 all-tests:
@@ -13,7 +13,7 @@ watch-tests:
 watch-changed-tests:
 	lein test-refresh :changes-only
 
-watch-cucumber:
+watch-acceptance-tests:
 	lein test-refresh :only :acceptance
 
 check-outdated-libs:

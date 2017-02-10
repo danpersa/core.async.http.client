@@ -11,7 +11,10 @@
     (iasync/as-channel request
                        {:on-open (fn [stream]
                                    (do
-                                     (iasync/send! stream name)
+                                     (iasync/send! stream
+                                                   {:status  200
+                                                    :headers {"Access-Control-Allow-Origin" "*"}
+                                                    :body    name})
                                      (dotimes [msg num]
                                        (iasync/send! stream (str " part-" msg)
                                                      {:close? (= msg (- num 1))})
@@ -21,15 +24,16 @@
   (web/run (streaming-endpoint name num) :host localhost :port 8083 :path (str "/" name)))
 
 (defn- endpoint [name]
-  (fn [request]
+  (fn [_]
     {:status  200
      :headers {"X-Header-1"                  ["Value 1" "Value 2"]
                "Access-Control-Allow-Origin" "*"}
      :body    (str "Hello world and " name)}))
 
 (defn- error-endpoint [request]
-  {:status 500
-   :body   "Hello world 500"})
+  {:status  500
+   :headers {"Access-Control-Allow-Origin" "*"}
+   :body    "Hello world 500"})
 
 (defn- error-sleep-endpoint [request]
   (Thread/sleep 1000)
@@ -37,12 +41,15 @@
 
 (defn- sleep-endpoint [request]
   (Thread/sleep 1000)
-  {:status 200
-   :body   (str "Hello world and sleep\n")})
+  {:status  200
+   :headers {"Access-Control-Allow-Origin" "*"}
+   :body    (str "Hello world and sleep\n")})
 
 (defn- headers-fragment [request]
   {:status  200
-   :headers {"Content-Type" "application/json"}
+   :headers {"Content-Type"                 "application/json"
+             "Access-Control-Allow-Origin"  "*"
+             "Access-Control-Allow-Headers" "Content-Type, Access-Control-Allow-Headers, x-header-1, x-header-2, x-header-3"}
    :body    (->> (seq (:headers request))
                  (filter (fn [[key value]] (str/starts-with? key "x-")))
                  (map (fn [[key value]] (str key ": " value)))
@@ -50,7 +57,8 @@
 
 (defn- body-echo-fragment [request]
   {:status  200
-   :headers {"Content-Type" "application/json"}
+   :headers {"Content-Type"                "application/json"
+             "Access-Control-Allow-Origin" "*"}
    :body    (request :body)})
 
 (defn- run-endpoint [name]
