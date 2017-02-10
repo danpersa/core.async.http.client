@@ -1,9 +1,9 @@
 (ns core.async.http.client.async-http
+  (:refer-clojure :exclude [get])
   (:require [core.async.http.protocols :as proto]
             [core.async.http.client :as c]
             [core.async.http.utils :as utils]
             [clojure.core.async :as async :refer [chan >!! <!!]]
-            [clojure.core.match :as m]
             [clojure.tools.logging :as log])
   (:import (org.asynchttpclient
              DefaultAsyncHttpClient
@@ -22,9 +22,6 @@
 (def state {:continue AsyncHandler$State/CONTINUE
             :abort    AsyncHandler$State/ABORT
             :upgrade  AsyncHandler$State/UPGRADE})
-
-(defn- convert-method-name [method]
-  (.toUpperCase (name method)))
 
 (defn- convert-headers [^HttpResponseHeaders headers]
   (let [^HttpHeaders http-headers (.getHeaders headers)]
@@ -109,12 +106,15 @@
                       (utils/assoc-if (fn [_ _] (some? body-chan))
                                       :body-part-callback
                                       (fn [this body-part]
-                                        (>!! body-chan body-part)
+                                        (if (not (empty? body-part))
+                                          (>!! body-chan (String. body-part "UTF-8")))
                                         (state :continue)))
                       (utils/assoc-if (fn [_ _] (some? error-chan))
                                       :error-callback
                                       (fn [this ^Throwable error]
-                                        (>!! error-chan error)
+                                        (if (instance? java.util.concurrent.TimeoutException error)
+                                          (>!! error-chan :timeout)
+                                          (>!! error-chan :error))
                                         (close-all-channels)))
                       (assoc :completed-callback (fn [this]
                                                    (log/debug "Completed callback")
@@ -153,8 +153,10 @@
                    :error-chan   (or error-chan (chan 1))}
             ^BoundRequestBuilder request-builder (BoundRequestBuilder.
                                                    cl
-                                                   (convert-method-name method)
+                                                   (c/convert-method-name method)
                                                    false)]
+        (log/debug "Doing a call to" url)
+
         (.setUrl request-builder url)
 
         (when timeout
@@ -170,48 +172,13 @@
         {:status  (chans :status-chan)
          :headers (chans :headers-chan)
          :body    (chans :body-chan)
-         :error   (chans :error-chan)}))
-    (sync-request! [this options]
-      (let [out-chan (chan 1024)
-            error-chan (chan 1)]
-
-        (proto/request! this (merge
-                               options
-                               {:status-chan  out-chan
-                                :headers-chan out-chan
-                                :body-chan    out-chan
-                                :error-chan   error-chan}))
-
-        (let [error-or-status (async/alts!! [error-chan out-chan])]
-          (m/match [error-or-status]
-                   [[status out-chan]]
-                   (do
-                     (log/debug "Status" status)
-                     (let [headers (<!! out-chan)]
-
-                       (loop [body-part (<!! out-chan)
-                              result ""]
-                         (if body-part
-                           (recur (<!! out-chan) (str result (String. body-part "UTF-8")))
-                           {:status  status
-                            :headers headers
-                            :body    result}))))
-                   [[ex error-chan]]
-                   (do
-                     (log/error ex "Error")
-                     {:error ex})))))))
+         :error   (chans :error-chan)}))))
 
 (def request (partial c/request client))
 
-(def sync-request (partial c/sync-request client))
-
 (def get (partial c/get client))
 
-(def sync-get (partial c/sync-get client))
-
 (def post (partial c/post client))
-
-(def sync-post (partial c/sync-post client))
 
 (comment
   (let [{:keys [body-chan]} (get "http://www.example.com" {:client default-client})]

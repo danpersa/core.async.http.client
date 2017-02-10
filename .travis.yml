@@ -1,5 +1,8 @@
 language: clojure
 
+node_js:
+  - "6"
+
 sudo: false
 
 cache:
@@ -9,7 +12,10 @@ cache:
     - $HOME/.ivy2
 
 script:
-  - lein spec spec -f d
-  - lein cucumber --plugin pretty
+  - lein test
+  - lein run&
+  - lein test :acceptance
+  - lein doo phantom test once
+  - lein doo node node-test once
 jdk:
   - oraclejdk8

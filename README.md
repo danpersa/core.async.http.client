@@ -1,9 +1,11 @@
 # core.async.http.client
 
-core.async.http.client is an HTTP library wrapping async-http-client.
-It uses core.async channels to return the response.
+core.async.http.client is an HTTP client for clojure and clojurescript.
+
+It uses core.async channels to return the responses.
 
 [![Build Status](https://travis-ci.org/danpersa/core.async.http.client.svg?branch=master)](https://travis-ci.org/danpersa/core.async.http.client)
+[![Clojars Project](https://img.shields.io/clojars/v/core.async.http.client.svg)](https://clojars.org/core.async.http.client)
 
 ## Installation
 
@@ -12,28 +14,20 @@ core.async.http.client is available from [Clojars](https://clojars.org/groups/co
 With Leiningen/Boot:
 
 ```
-[core.async.http.client "0.1.0-SNAPSHOT"]
+[core.async.http.client "0.2.0-SNAPSHOT"]
 ```
 
+# Usage examples
 ## GET
 
 ```
-(http/get "http://site.com/resources/id")
+(http/get "http://www.example.com/resources/id")
 ```
 
 ## POST
 
 ```
 (http/post "http://site.com/resources" {:body "hello"})
-```
-
-## Run Cucumber from IntelliJ
-```
-Main Class: cucumber.api.cli.Main
-Glue: features/step_definitions
-Feature Folder: .... core.async.http.client/features (Use full path)
-VM Options: -Xbootclasspath/p:features/step_definitions:src:spec/resources:spec
-Program Arguments: "--plugin" "pretty"
 ```
 
 ## Inspiration

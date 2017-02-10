@@ -23,7 +23,8 @@
 (defn- endpoint [name]
   (fn [request]
     {:status  200
-     :headers {"X-Header-1" ["Value 1" "Value 2"]}
+     :headers {"X-Header-1"                  ["Value 1" "Value 2"]
+               "Access-Control-Allow-Origin" "*"}
      :body    (str "Hello world and " name)}))
 
 (defn- error-endpoint [request]
@@ -63,3 +64,7 @@
   (web/run sleep-endpoint :host localhost :port 8083 :path (str "/sleep"))
   (web/run headers-fragment :host localhost :port 8083 :path (str "/x-headers"))
   (web/run body-echo-fragment :host localhost :port 8083 :path (str "/echo")))
+
+(defn -main []
+  (println "Starting endpoints...")
+  (start))

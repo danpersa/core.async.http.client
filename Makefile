@@ -1,11 +1,44 @@
 acceptance-tests:
-	lein cucumber --plugin pretty
+	lein test :acceptance
 
-run-spec:
-	lein spec spec -f d
+all-tests:
+	lein test :all
 
-auto-spec:
-	lein spec spec --autotest -f d
+run-tests:
+	lein test
+
+watch-tests:
+	lein test-refresh
+
+watch-changed-tests:
+	lein test-refresh :changes-only
 
 watch-cucumber:
-	lein test-refresh
+	lein test-refresh :only :acceptance
+
+check-outdated-libs:
+	lein ancient
+
+start-endpoints:
+	lein run
+
+start-endpoints-bg:
+	lein run&
+
+# clojurescript
+
+run-phantom-tests:
+	lein doo phantom test once
+
+watch-phantom-tests:
+	lein doo phantom test auto
+
+run-browser-tests:
+	lein figwheel devcards-test
+
+# node
+run-node-tests:
+	lein doo node node-test once
+
+watch-node-tests:
+	lein doo node node-test auto
