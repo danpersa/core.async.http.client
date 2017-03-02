@@ -81,3 +81,25 @@
                  (is (= 200 (<! status-chan)))
                  (is (= "Hello world" (<! body-chan)))
                  (done))))))
+
+(defn call-with-method [http-call result]
+  (async done
+    (let [response (http-call (str endpoints-url "/method-echo"))
+          body-chan (response :body)
+          status-chan (response :status)]
+      (go
+        (is (= 200 (<! status-chan)))
+        (is (= result (<! body-chan)))
+        (done)))))
+
+(deftest ^:acceptance method-test
+         (testing "Successful specify the method"
+           (call-with-method http/get "get")
+           (call-with-method http/post "post")
+           (call-with-method http/put "put")
+           (call-with-method http/patch "patch")
+           (call-with-method http/delete "delete")
+           (call-with-method http/head "")
+           (call-with-method http/options "options")
+           ; failing (call-with-method http/trace "trace")
+           ))

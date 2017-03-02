@@ -61,3 +61,21 @@
           status (response :status)]
       (is (= 200 status))
       (is (= "Hello world" body)))))
+
+(defn call-with-method [http-call result]
+  (let [response (http-call (str endpoints-url "/method-echo"))
+        body (response :body)
+        status (response :status)]
+    (is (= 200 status))
+    (is (= result body))))
+
+(deftest ^:acceptance sync-method-test
+  (testing "Successful specify the method"
+    (call-with-method http/get "get")
+    (call-with-method http/post "post")
+    (call-with-method http/put "put")
+    (call-with-method http/patch "patch")
+    (call-with-method http/delete "delete")
+    (call-with-method http/head "")
+    (call-with-method http/options "options")
+    (call-with-method http/trace "trace")))

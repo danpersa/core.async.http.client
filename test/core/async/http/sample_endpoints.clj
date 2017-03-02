@@ -61,6 +61,12 @@
              "Access-Control-Allow-Origin" "*"}
    :body    (request :body)})
 
+(defn- method-echo-fragment [request]
+  {:status  200
+   :headers {"Content-Type"                "application/text"
+             "Access-Control-Allow-Origin" "*"}
+   :body    (str (name (request :request-method)))})
+
 (defn- run-endpoint [name]
   (web/run (endpoint name) :host localhost :port 8083 :path (str "/" name)))
 
@@ -71,7 +77,8 @@
   (web/run error-sleep-endpoint :host localhost :port 8083 :path (str "/error-sleep"))
   (web/run sleep-endpoint :host localhost :port 8083 :path (str "/sleep"))
   (web/run headers-fragment :host localhost :port 8083 :path (str "/x-headers"))
-  (web/run body-echo-fragment :host localhost :port 8083 :path (str "/echo")))
+  (web/run body-echo-fragment :host localhost :port 8083 :path (str "/echo"))
+  (web/run method-echo-fragment :host localhost :port 8083 :path (str "/method-echo")))
 
 (defn -main []
   (println "Starting endpoints...")

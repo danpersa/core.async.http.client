@@ -1,5 +1,5 @@
 (ns core.async.http.client.xhr
-  (:refer-clojure :exclude [get])
+  (:refer-clojure :exclude [get options])
   (:require [goog.events :as events]
             [cljs.core.async :refer [chan close! >! <!]]
             [core.async.http.client :as c]
@@ -96,3 +96,15 @@
 (def get (partial c/get client))
 
 (def post (partial c/post client))
+
+(def put (partial c/put client))
+
+(def patch (partial c/patch client))
+
+(def delete (partial c/delete client))
+
+(def head (partial c/head client))
+
+(def options (partial c/options client))
+
+(def trace (partial c/trace client))

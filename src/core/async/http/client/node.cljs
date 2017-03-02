@@ -1,5 +1,5 @@
 (ns core.async.http.client.node
-  (:refer-clojure :exclude [get])
+  (:refer-clojure :exclude [get options])
   (:require [cljs.nodejs :as node]
             [cljs.core.async :refer [chan close! >! <!]]
             [core.async.http.client :as c]
@@ -94,8 +94,14 @@
 
 (def post (partial c/post client))
 
-;
-;(defn -main [& args]
-;  (println "Hello world!"))
-;
-;(set! *main-cli-fn* -main)
+(def put (partial c/put client))
+
+(def patch (partial c/patch client))
+
+(def delete (partial c/delete client))
+
+(def head (partial c/head client))
+
+(def options (partial c/options client))
+
+(def trace (partial c/trace client))
