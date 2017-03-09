@@ -180,6 +180,18 @@
 
 (def post (partial c/post client))
 
+(def put (partial c/put client))
+
+(def patch (partial c/patch client))
+
+(def delete (partial c/delete client))
+
+(def head (partial c/head client))
+
+(def options (partial c/options client))
+
+(def trace (partial c/trace client))
+
 (comment
   (let [{:keys [body-chan]} (get "http://www.example.com" {:client default-client})]
     (async/go-loop []

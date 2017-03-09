@@ -46,3 +46,15 @@
 (def get (partial c/get client))
 
 (def post (partial c/post client))
+
+(def put (partial c/put client))
+
+(def patch (partial c/patch client))
+
+(def delete (partial c/delete client))
+
+(def head (partial c/head client))
+
+(def options (partial c/options client))
+
+(def trace (partial c/trace client))
